@@ -12,7 +12,8 @@ module Rabbitmq
     attr_accessor :running, :options, :action
 
     def run
-      @running = true
+      @running        = true
+      sleep_duration  = 0
 
       while @running
         begin
@@ -20,10 +21,11 @@ module Rabbitmq
           rabbit_consumer = RabbitConsumer.start(@options, @action)
           @options[:logger].info "Instance finish" if @options[:verbose]
         rescue Exception => error
+          sleep_duration  = 30
           @options[:logger].error "Error: " + error.message
           @options[:logger].error error.backtrace
         end
-        sleep 30
+        sleep sleep_duration
       end
     end
 

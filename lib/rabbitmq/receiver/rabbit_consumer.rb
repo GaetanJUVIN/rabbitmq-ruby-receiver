@@ -80,9 +80,12 @@ module Rabbitmq
             rescue Bunny::ChannelAlreadyClosed => error
               @options[:logger].error "Exception ChannelAlreadyClosed".red
               raise error if error.class == Bunny::ChannelAlreadyClosed
+            rescue LocalJumpError
+              Rabbitmq::Receiver.instance.running = false
+              @rmq_channel.consumers[delivery_info.consumer_tag].cancel
             rescue Exception => error
-              @options[:logger].error "Error: " + error.message
-              @options[:logger].error error.backtrace
+              @options[:logger].error "Error: #{error.class} #{error.message}"
+              @options[:logger].error error.backtrace.join("\n")
               @rmq_channel.reject(delivery_info.delivery_tag, true)
             end
           end
