@@ -52,7 +52,7 @@ module Rabbitmq
 
             @rmq_channel    = @rmq_connection.create_channel
             @rmq_channel.prefetch(@options[:prefetch])
-            @rmq_queue      = @rmq_channel.queue(@options[:queue], durable: true, exlusive: false)
+            @rmq_queue      = @rmq_channel.queue(@options[:queue], durable: @options[:durable], auto_delete: @options[:auto_delete], exlusive: @options[:exclusive])
           rescue Exception => error
             @options[:logger].error "Error: #{error.message}".red
             sleep(sleep_duration)
@@ -82,6 +82,7 @@ module Rabbitmq
               raise error if error.class == Bunny::ChannelAlreadyClosed
             rescue LocalJumpError
               Rabbitmq::Receiver.instance.running = false
+              @rmq_channel.ack(delivery_info.delivery_tag)
               @rmq_channel.consumers[delivery_info.consumer_tag].cancel
             rescue Exception => error
               @options[:logger].error "Error: #{error.class} #{error.message}"

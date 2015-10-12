@@ -27,6 +27,7 @@ module Rabbitmq
         end
         sleep sleep_duration
       end
+      @running = true
     end
 
     def start(options = {}, &block)
@@ -34,7 +35,7 @@ module Rabbitmq
       @running = false
       @action  = block
 
-      @options[:logger].info "------- Runner on #{@options[:host]} starting.".white
+      @options[:logger].info "------- Runner on #{@options[:host]} starting.".white if @options[:verbose]
 
       self.run
     end
